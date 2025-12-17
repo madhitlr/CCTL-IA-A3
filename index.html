@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master IA - Dark Mode</title>
+    <style>
+        :root {
+            /* Palette Dark Mode */
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --primary-color: #90caf9; /* Bleu clair lisible sur fond noir */
+            --accent-color: #2196f3;
+            --text-color: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --success: #66bb6a; /* Vert doux */
+            --error: #ef5350;   /* Rouge doux */
+            --btn-bg: #2c2c2c;
+            --btn-hover: #3d3d3d;
+            --border-color: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 { 
+            color: var(--primary-color); 
+            font-weight: 300; 
+            margin-bottom: 10px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .score-board {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--bg-color);
+            font-size: 1.2rem;
+            background: var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .question-title {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 20px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .option-btn {
+            background: var(--btn-bg);
+            border: 1px solid var(--border-color);
+            padding: 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1rem;
+            color: var(--text-color);
+            transition: all 0.2s ease;
+            width: 100%;
+            position: relative;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--primary-color);
+            background-color: var(--btn-hover);
+            transform: translateY(-2px);
+        }
+
+        .option-btn.correct {
+            background-color: rgba(102, 187, 106, 0.2) !important;
+            border-color: var(--success) !important;
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        .option-btn.wrong {
+            background-color: rgba(239, 83, 80, 0.2) !important;
+            border-color: var(--error) !important;
+            color: var(--error);
+            opacity: 0.7;
+        }
+
+        .justification {
+            background: #252525;
+            padding: 20px;
+            border-radius: 10px;
+            border-top: 3px solid var(--primary-color);
+            margin-top: 25px;
+            display: none;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .justification strong { color: white; }
+
+        .nav-btn {
+            background: var(--primary-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            margin-top: 25px;
+            width: 100%;
+            font-weight: bold;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        .nav-btn:hover { 
+            background: var(--accent-color); 
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Simulateur CCTL IA MEOW</h1>
+        <h2>merci de skip quand y'a des questions débiles</h2>
+        <div class="score-board" id="score">Score : 0 / 0</div>
+    </header>
+
+    <div id="quiz-container"></div>
+    <button class="nav-btn" id="next-btn" style="display:none;" onclick="chargerProchaineQuestion()">Question Suivante</button>
+</div>
+
+<script>
+    // BASE DE DONNÉES NETTOYÉE
+    const database = [
+        { q: "Quelle formule correspond à 1/N * Σ(yi - ŷ)² ?", r: ["MSE", "RMSE", "MAE"], c: 0, j: "La <b>MSE (Mean Squared Error)</b> calcule la moyenne des carrés des erreurs. En mettant les erreurs au carré, elle pénalise beaucoup plus fortement les grandes erreurs (outliers) que les petites." },
+        { q: "Quelle formule correspond à √[1/N * Σ(yi - ŷ)²] ?", r: ["MSE", "RMSE", "MAE"], c: 1, j: "La <b>RMSE (Root Mean Squared Error)</b> est la racine carrée de la MSE. Son grand avantage est qu'elle s'exprime dans la <b>même unité</b> que la variable à prédire (Y), ce qui la rend plus interprétable." },
+        { q: "Quelle formule correspond à 1/N * Σ|yi - ŷ| ?", r: ["MSE", "RMSE", "MAE"], c: 2, j: "La <b>MAE (Mean Absolute Error)</b> utilise la valeur absolue. Elle mesure l'écart moyen sans exagérer l'impact des valeurs aberrantes, contrairement à la MSE." },
+        { q: "Que représente 'yi' dans les formules de métriques ?", r: ["La valeur prédite", "La valeur réelle", "La moyenne"], c: 1, j: "Dans la notation statistique, <b>yi</b> représente la <b>valeur réelle</b> (observée/vérité terrain) pour la donnée numéro i." },
+        { q: "Que représente 'ŷ' (y chapeau) dans les formules ?", r: ["La valeur réelle", "La valeur prédite", "L'erreur type"], c: 1, j: "Le symbole <b>ŷ</b> (prononcé y-chapeau ou y-hat) désigne la valeur <b>estimée ou prédite</b> par votre modèle d'IA." },
+        { q: "Que représente 'N' dans le calcul des métriques ?", r: ["Le nombre de variables", "Le nombre d'observations", "Le coefficient de pente"], c: 1, j: "<b>N</b> correspond à la taille de l'échantillon, c'est-à-dire le <b>nombre total de lignes</b> ou d'observations sur lesquelles on calcule l'erreur." },
+        { q: "Quelle métrique est exprimée dans la même unité que la variable cible Y ?", r: ["MSE", "RMSE", "R²"], c: 1, j: "C'est la <b>RMSE</b>. La MSE est en unité 'au carré' (ex: euros²), ce qui n'a pas de sens physique. La racine carrée ramène cela à l'unité d'origine." },
+        { q: "Si les erreurs sont (2, -2), quel est le résultat de la MAE ?", r: ["0", "2", "4"], c: 1, j: "La MAE fait la moyenne des valeurs absolues : (|2| + |-2|) / 2 = (2+2)/2 = <b>2</b>. Les erreurs positives et négatives ne s'annulent pas." },
+        { q: "Si les erreurs sont (2, -2), quel est le résultat de la MSE ?", r: ["0", "4", "8"], c: 1, j: "La MSE met au carré : (2² + (-2)²) / 2 = (4+4)/2 = <b>4</b>." },
+        { q: "Pourquoi utilise-t-on le carré dans la MSE ?", r: ["Pour simplifier le calcul", "Pour supprimer les signes négatifs et pénaliser les gros écarts", "Pour réduire la valeur finale"], c: 1, j: "Le carré a deux rôles : 1) Rendre tout positif. 2) Donner un poids disproportionné aux <b>grandes erreurs</b> (outliers), forçant le modèle à les corriger en priorité." },
+        { q: "Quelle métrique choisir pour ignorer l'impact disproportionné des outliers ?", r: ["MSE", "MAE", "RMSE"], c: 1, j: "La <b>MAE</b> est la plus robuste aux outliers car elle n'élève pas l'erreur au carré. Une erreur de 10 vaut 10, pas 100." },
+        { q: "Quelle métrique est la plus utilisée pour ajuster un modèle de Moindres Carrés ?", r: ["MSE", "MAE", "F-Score"], c: 0, j: "Par définition, la régression linéaire ('Moindres Carrés') cherche mathématiquement à minimiser la somme des carrés des erreurs, donc la <b>MSE</b>." },
+        { q: "Calcul : yi=10, ŷ=7. Quelle est l'erreur absolue ?", r: ["3", "-3", "17"], c: 0, j: "|10 - 7| = <b>3</b>. C'est simplement la distance entre le réel et le prédit." },
+        { q: "Calcul : yi=10, ŷ=12. Quelle est l'erreur au carré ?", r: ["2", "-2", "4"], c: 2, j: "L'écart est -2. Au carré : (-2)² = <b>4</b>." },
+        { q: "Si la MSE est de 16, quelle est la RMSE ?", r: ["4", "256", "8"], c: 0, j: "RMSE = √MSE. Donc √16 = <b>4</b>." },
+        { q: "Si la RMSE est de 10, quelle est la MSE ?", r: ["3.16", "100", "20"], c: 1, j: "MSE = RMSE². Donc 10² = <b>100</b>." },
+        { q: "Une MAE de 0 signifie :", r: ["Le modèle est moyen", "Les prédictions sont parfaites", "Le modèle est défaillant"], c: 1, j: "Si l'erreur moyenne est nulle, cela signifie que toutes les prédictions tombent exactement sur les valeurs réelles. Le modèle est <b>parfait</b> sur ces données." },
+        { q: "Peut-on avoir une MSE négative ?", r: ["Oui", "Non", "Seulement avec des données négatives"], c: 1, j: "<b>Non</b>. Un carré est toujours positif ou nul. Une somme de nombres positifs ne peut pas être négative." },
+        { q: "Laquelle de ces métriques n'est PAS utilisée en régression ?", r: ["MAE", "Recall", "RMSE"], c: 1, j: "Le <b>Recall</b> (Rappel) est une métrique pour la <b>classification</b> (ex: détecter des spams ou des maladies), pas pour prédire des nombres." },
+        { q: "L'erreur résiduelle est définie par :", r: ["yi + ŷ", "yi - ŷ", "yi * ŷ"], c: 1, j: "Le résidu est la différence simple : <b>Valeur Réelle - Valeur Prédite</b>." },
+        { q: "Dans une étude de CA, si MAE = 5 (en milliers d'€), l'erreur moyenne est de :", r: ["5 €", "500 €", "5000 €"], c: 2, j: "La MAE garde l'unité des données. Si l'unité est le 'millier d'euros', alors 5 correspond à <b>5 000 €</b>." },
+        { q: "La RMSE est-elle toujours supérieure ou égale à la MAE ?", r: ["Oui", "Non", "Cela dépend de N"], c: 0, j: "<b>Oui</b>. Mathématiquement, la moyenne quadratique (RMSE) est toujours supérieure ou égale à la moyenne arithmétique (MAE)." },
+        { q: "Si on double toutes les erreurs, la MSE est multipliée par :", r: ["2", "4", "8"], c: 1, j: "La MSE est quadratique. Si l'erreur est multipliée par 2, le carré de l'erreur est multiplié par 2² = <b>4</b>." },
+        { q: "Quelle métrique est la plus difficile à interpréter directement ?", r: ["MAE", "RMSE", "MSE"], c: 2, j: "La <b>MSE</b> est difficile à interpréter car son unité est au carré (ex: des 'mètres carrés' pour prédire une taille en mètres)." },
+        { q: "L'optimisation des 'Moindres Carrés' minimise quelle valeur ?", r: ["Σ|yi - ŷ|", "Σ(yi - ŷ)²", "√Σ(yi - ŷ)²"], c: 1, j: "Le nom l'indique : elle minimise la somme des <b>carrés</b> des erreurs." },
+        { q: "Le symbole Σ (Sigma) dans les formules signifie :", r: ["Soustraction", "Somme", "Produit"], c: 1, j: "Le symbole grec Sigma majuscule est l'opérateur mathématique pour la <b>Somme</b>." },
+        { q: "Si N augmente, la MSE :", r: ["Augmente forcément", "Diminue forcément", "Reste une moyenne"], c: 2, j: "La MSE est une moyenne (divisée par N). Elle converge vers l'erreur réelle du modèle, elle n'augmente ni ne diminue mécaniquement." },
+        { q: "Laquelle est une métrique de 'distance' ?", r: ["RMSE", "Coefficient de corrélation", "Intercept"], c: 0, j: "La <b>RMSE</b> représente la distance euclidienne moyenne entre les points prédits et les points réels." },
+        { q: "Pour un modèle parfait, MSE / MAE est égal à :", r: ["0 / 0 (indéfini)", "1", "0"], c: 2, j: "Si le modèle est parfait, l'erreur est de 0. Donc MSE et MAE valent <b>0</b>." },
+        { q: "L'équation de la droite de régression est souvent notée :", r: ["y = ax + b", "MSE = x²", "ŷ = f(x)"], c: 0, j: "C'est l'équation d'une fonction affine : <b>y = ax + b</b> (ou y = a1x + a0)." },
+        { q: "La régression linéaire est-elle un algorithme de classification ?", r: ["Oui", "Non", "Seulement si les données sont binaires"], c: 1, j: "<b>Non</b>. La régression prédit une valeur <b>continue</b> (un nombre, un prix, une température). La classification prédit une catégorie." },
+        { q: "Quel est l'objectif principal de la régression linéaire ?", r: ["Grouper des données similaires", "Prédire une variable quantitative", "Identifier des anomalies"], c: 1, j: "Son but est d'expliquer une variable numérique (Y) par une ou plusieurs autres variables (X)." },
+        { q: "Pourquoi dit-on qu'elle est 'linéaire' ?", r: ["Parce qu'elle utilise des lignes courbes", "Parce qu'elle suppose une relation en ligne droite entre X et Y", "Parce qu'elle est simple"], c: 1, j: "Elle suppose que la relation peut être dessinée par une <b>ligne droite</b> (proportionnalité)." },
+        { q: "Comment appelle-t-on la variable 'Y' dans Y = aX + b ?", r: ["Variable indépendante", "Variable dépendante", "Variable explicative"], c: 1, j: "Y est la <b>variable dépendante</b> (ou variable cible) car elle dépend de X." },
+        { q: "Comment appelle-t-on la variable 'X' ?", r: ["Variable expliquée", "Variable cible", "Variable indépendante"], c: 2, j: "X est la <b>variable indépendante</b> (ou feature/prédicteur)." },
+        { q: "Dans une régression linéaire multiple, combien y a-t-il de variables indépendantes ?", r: ["Une seule", "Exactement deux", "Plusieurs (N variables)"], c: 2, j: "La régression multiple utilise <b>plusieurs</b> variables X (X1, X2, X3...) pour prédire Y." },
+        { q: "Quelle condition est nécessaire sur la variable dépendante ?", r: ["Elle doit être catégorielle", "Elle doit être étiquetée préalablement", "Elle doit être toujours positive"], c: 1, j: "C'est de l'apprentissage supervisé : nous avons besoin des réponses (labels) pour entraîner le modèle." },
+        { q: "Les variables indépendantes peuvent-elles être corrélées entre elles ?", r: ["Oui, c'est idéal", "Non, cela peut poser des problèmes (multicolinéarité)", "Peu importe"], c: 1, j: "La <b>multicolinéarité</b> (quand les X sont trop liés entre eux) rend le modèle instable et l'interprétation des coefficients impossible." },
+        { q: "Est-il nécessaire que les variables numériques aient des ordres de grandeur similaires ?", r: ["Oui, pour la stabilité", "Non, jamais", "Seulement pour les catégories"], c: 0, j: "<b>Oui</b>. Normaliser les données aide l'algorithme d'optimisation (descente de gradient) à trouver la solution plus vite." },
+        { q: "Dans l'équation Y = aX + b, que représente 'a' ?", r: ["L'ordonnée à l'origine", "La pente (coefficient directeur)", "L'erreur résiduelle"], c: 1, j: "Le terme 'a' est la <b>pente</b>. Il indique la variation de Y pour une augmentation de 1 unité de X." },
+        { q: "Dans l'équation Y = aX + b, que représente 'b' ?", r: ["La pente", "L'ordonnée à l'origine (biais)", "La variable cible"], c: 1, j: "Le terme 'b' est l'<b>ordonnée à l'origine</b> (intercept), la valeur de Y quand X vaut 0." },
+        { q: "Que signifie un coefficient 'a' négatif ?", r: ["Y augmente quand X augmente", "Y diminue quand X augmente", "Il n'y a pas de relation"], c: 1, j: "Une pente négative signifie que les variables vont en sens inverse : quand l'une monte, l'autre descend." },
+        { q: "Quelle valeur de corrélation indique l'absence totale de relation linéaire ?", r: ["1", "-1", "0"], c: 2, j: "Un coefficient de corrélation de <b>0</b> indique qu'il n'y a aucun lien linéaire entre les variables." },
+        { q: "Une corrélation de -1 est-elle plus faible qu'une corrélation de 0.5 ?", r: ["Oui", "Non", "Elles sont égales"], c: 1, j: "<b>Non</b>. -1 indique une relation <b>parfaite</b> (très forte), mais inversée. La force de la relation se lit en valeur absolue (|1| > |0.5|)." },
+        { q: "Le coefficient de corrélation est toujours compris entre :", r: ["0 et 100", "-1 et 1", "-∞ et +∞"], c: 1, j: "C'est une valeur normalisée comprise strictement entre <b>-1</b> et <b>+1</b>." },
+        { q: "La méthode du 'Maximum Likelihood' est-elle le standard pour la régression ?", r: ["Oui", "Non, c'est le Least Square Error", "Oui, pour les petits datasets"], c: 1, j: "Le standard est la méthode des <b>Moindres Carrés (Least Squares)</b>." },
+        { q: "Que minimise la méthode des moindres carrés ?", r: ["La somme des erreurs absolues", "La somme des carrés des résidus", "La valeur maximale de Y"], c: 1, j: "Elle cherche à minimiser la <b>somme des carrés des résidus</b> (SSE)." },
+        { q: "Si Y = 50 - 2X, quelle est l'influence de X ?", r: ["Forte et positive", "Forte et négative", "Neutre"], c: 1, j: "Le coefficient est <b>-2</b>. L'influence est donc négative." },
+        { q: "Peut-on utiliser la régression linéaire pour prédire le prix d'une maison ?", r: ["Oui", "Non", "Seulement si la maison est neuve"], c: 0, j: "<b>Oui</b>, car le prix est une variable continue. C'est l'exemple classique de la régression." },
+        { q: "Quelle affirmation est vraie si le coefficient de corrélation est de 0.95 ?", r: ["La relation est faible", "La relation est forte", "Il n'y a aucun lien"], c: 1, j: "0.95 est très proche de 1. Cela indique une <b>relation linéaire positive très forte</b>." },
+        { q: "La régression linéaire détecte-t-elle les relations courbes ?", r: ["Oui", "Non", "Seulement en Python"], c: 1, j: "<b>Non</b>. Par définition, elle ne modélise que des lignes droites. Pour des courbes, il faut d'autres modèles." },
+        { q: "L'impact des outliers sur la régression est :", r: ["Nul", "Négligeable", "Important"], c: 2, j: "L'impact est <b>important</b>. Un seul outlier peut 'tirer' la droite vers lui et fausser les prédictions pour tous les autres points." },
+        { q: "La régression linéaire nécessite-t-elle beaucoup de puissance ?", r: ["Oui", "Non, c'est un algorithme léger", "Seulement pour 10 lignes"], c: 1, j: "C'est un algorithme mathématiquement simple et <b>très léger</b> en termes de calcul." },
+        { q: "Quel est le nom du module contenant la régression dans sklearn ?", r: ["sklearn.cluster", "sklearn.linear_model", "sklearn.neighbors"], c: 1, j: "Les modèles de régression linéaire sont dans <b>sklearn.linear_model</b>." },
+        { q: "Dans sklearn, quel argument passe-t-on à .fit() ?", r: ["Seulement X", "Seulement Y", "X et Y (features et labels)"], c: 2, j: "Pour l'entraînement (.fit), il faut fournir les données (X) ET les réponses attendues (Y)." },
+        { q: "Qu'est-ce qu'un 'résidu' ?", r: ["Une donnée manquante", "La différence entre valeur réelle et prédite", "Le nom d'une variable"], c: 1, j: "Le résidu est l'erreur locale : c'est la distance verticale entre un point de donnée et la droite de régression." },
+        { q: "La régression linéaire simple n'utilise qu'une seule variable :", r: ["Dépendante", "Indépendante", "Aléatoire"], c: 1, j: "Simple = 1 seule variable <b>indépendante (X)</b>." },
+        { q: "Si tous les points sont sur la droite, l'erreur est :", r: ["Infinie", "Égale à 1", "Égale à 0"], c: 2, j: "Si la droite passe par tous les points, la prédiction est parfaite, l'erreur est <b>0</b>." },
+        { q: "La régression est-elle adaptée pour le SPAM ?", r: ["Oui", "Non, c'est de la classification", "Seulement s'il y a du texte"], c: 1, j: "<b>Non</b>. Spam/Non-Spam est une catégorie. C'est un problème de <b>classification</b>." },
+        { q: "Dans l'analyse Y=50000-5X du cours, que représente X ?", r: ["Le prix de vente", "Le chiffre d'affaire", "Le nombre de clients"], c: 0, j: "X est la variable explicative, ici le <b>prix de vente</b>." },
+        { q: "Dans l'équation Y = 50000 - 5X, que représente 50000 ?", r: ["Le prix de vente", "Le CA quand le prix est à 0€", "La perte minimale"], c: 1, j: "C'est l'ordonnée à l'origine (intercept) : la valeur de Y quand X=0." },
+        { q: "Dans Y = 50000 - 5X, si X est en euros, l'unité de -5 est :", r: ["Euros", "Milliers d'euros par euro", "Pas d'unité"], c: 1, j: "C'est un taux de variation. Il exprime combien de CA on perd par euro de prix ajouté." },
+        { q: "Si Y = 50000 - 5X, quel est le CA (Y) si X est de 10€ ?", r: ["49950", "49995", "45000"], c: 0, j: "Y = 50000 - (5 * 10) = 50000 - 50 = <b>49950</b>." },
+        { q: "Une pente de -5 signifie qu'une hausse de 1€ de X entraîne :", r: ["Une hausse de 5k€ de CA", "Une baisse de 5k€ de CA", "Une baisse de 5€ de CA"], c: 1, j: "Le signe '-' indique une baisse. Le CA diminue de 5 unités." },
+        { q: "Si Y = 10 + 2X, la relation est :", r: ["Positive", "Négative", "Nulle"], c: 0, j: "Le coefficient est +2 (positif), donc Y augmente avec X." },
+        { q: "Dans Y = -100 + 0.5X, si X augmente de 10, Y augmente de :", r: ["5", "10", "50"], c: 0, j: "Augmentation = Pente * Variation X = 0.5 * 10 = <b>5</b>." },
+        { q: "Laquelle montre la chute la plus rapide de Y ?", r: ["Y = 10 - 2X", "Y = 10 - 8X", "Y = 100 - 1X"], c: 1, j: "La pente <b>-8</b> est la plus forte en valeur absolue négative, indiquant la descente la plus raide." },
+        { q: "Si Y (k€) = 20 - 2X (€), quel prix (X) rend le CA (Y) nul ?", r: ["0€", "10€", "20€"], c: 1, j: "On cherche X quand Y=0. 20 - 2X = 0 => 2X = 20 => X = <b>10</b>." },
+        { q: "Si Y = 50000 - 5X, et que X passe de 10€ à 11€, Y diminue de :", r: ["1€", "5 unités", "5000 unités"], c: 1, j: "X augmente de 1. Comme la pente est -5, Y diminue de <b>5</b>." },
+        { q: "Dans Y = aX + b, si 'a' est égal à 0 :", r: ["Y = b", "Y = X", "Impossible"], c: 0, j: "L'équation devient Y = 0*X + b, donc <b>Y = b</b>. Y est constant, la ligne est horizontale." },
+        { q: "Dans l'équation Y = 5X, quelle est la valeur de b ?", r: ["5", "0", "Inconnue"], c: 1, j: "C'est implicitement Y = 5X + 0. Donc b = <b>0</b>." },
+        { q: "L'intercept peut-il être négatif ?", r: ["Oui", "Non", "Seulement en Python"], c: 0, j: "<b>Oui</b>, la droite peut commencer en dessous de l'axe zéro." },
+        { q: "Si b = 100 et a = -10, l'équation est :", r: ["Y = 100X - 10", "Y = -10X + 100", "Y = 10X - 100"], c: 1, j: "Forme Y = aX + b. On remplace : <b>Y = -10X + 100</b>." },
+        { q: "Si Y diminue quand X augmente, 'a' est :", r: ["Positif", "Négatif", "Nul"], c: 1, j: "C'est la définition d'une corrélation ou d'une pente <b>négative</b>." },
+        { q: "Si X n'a aucune influence sur Y :", r: ["Y = b", "Y = aX", "Y = X"], c: 0, j: "Y ne change pas, peu importe X. Donc <b>Y = b</b> (constante)." },
+        { q: "Dans Y = 0.1X + 500, l'influence de X est :", r: ["Forte", "Faible", "Inexistante"], c: 1, j: "Le coefficient 0.1 est très petit, indiquant une influence <b>faible</b>." },
+        { q: "Si Y = 50000 - 5X, pour X = 100, Y est :", r: ["49500", "45000", "49900"], c: 0, j: "50000 - (5 * 100) = 50000 - 500 = <b>49500</b>." },
+        { q: "Une hausse de 10€ dans Y = 50000 - 5X fait baisser le CA de :", r: ["5€", "50€", "500€"], c: 1, j: "Variation Y = Pente * Variation X = -5 * 10 = -50. Baisse de <b>50</b>." },
+        { q: "L'intercept est-il toujours réaliste ?", r: ["Oui", "Non", "Seulement pour les moyennes"], c: 1, j: "<b>Non</b>. Parfois l'extrapolation mathématique à X=0 n'a pas de sens physique (ex: prix nul = CA maximum)." },
+        { q: "Dans ŷ = β₀ + β₁X, β₁ est :", r: ["L'intercept", "La pente", "L'erreur"], c: 1, j: "C'est la notation statistique pour la <b>pente</b> (le coefficient de X)." },
+        { q: "Dans ŷ = β₀ + β₁X, β₀ est :", r: ["La pente", "L'intercept", "X"], c: 1, j: "C'est la notation formelle pour l'<b>intercept</b>." },
+        { q: "Y = aX + b est une fonction :", r: ["Affine", "Carrée", "Exponentielle"], c: 0, j: "C'est la définition mathématique d'une fonction <b>affine</b> (ligne droite)." },
+        { q: "Si un point est au-dessus de la droite, son erreur est :", r: ["Positive", "Négative", "Nulle"], c: 0, j: "La valeur réelle est supérieure à la prédiction, donc Réel - Prédit est <b>positif</b>." },
+        { q: "Si un point est sur la droite :", r: ["y - ŷ = 0", "y - ŷ > 0", "y - ŷ < 0"], c: 0, j: "L'écart entre le réel et le prédit est nul." },
+        { q: "Si Y est en k€ et le résultat est 5, le montant est :", r: ["5 €", "500 €", "5000 €"], c: 2, j: "5 k€ = 5 * 1000 = <b>5000 €</b>." },
+        { q: "Si Y = 50k€ - 5X et X est en €, le résultat 49995 est :", r: ["49,995 €", "49 995 €", "49 995 000 €"], c: 1, j: "Le résultat brut garde l'unité de Y (euros), donc <b>49 995 €</b>." },
+        { q: "Laquelle passe par l'origine ?", r: ["Y = 2X + 1", "Y = 2X", "Y = 2X - 1"], c: 1, j: "Passer par l'origine signifie que pour X=0, Y=0. C'est le cas de <b>Y = 2X</b>." },
+        { q: "Si 'a' est très grand (ex: 1000), la droite est :", r: ["Horizontale", "Presque verticale", "À 45°"], c: 1, j: "Une forte pente rend la droite très raide, presque <b>verticale</b>." },
+        { q: "Une même régression simple peut avoir deux pentes ?", r: ["Oui", "Non", "Seulement si Y est nul"], c: 1, j: "<b>Non</b>. Les mathématiques de la régression (OLS) garantissent une solution unique optimale." },
+        { q: "Dans Y = -5X + 50000, X est-il bénéfique pour Y ?", r: ["Oui", "Non", "Neutre"], c: 1, j: "<b>Non</b>. La pente est négative, donc augmenter X fait baisser Y." },
+        { q: "Quelle commande donne un résumé statistique ?", r: ["df.info()", "df.describe()", "df.head()"], c: 1, j: "<b>df.describe()</b> calcule les statistiques principales (moyenne, écart-type, etc.)." },
+        { q: "Que fait df.head(10) ?", r: ["Supprime 10 lignes", "Affiche les 10 premières", "Affiche les 10 dernières"], c: 1, j: "Elle affiche les <b>10 premières lignes</b> du DataFrame." },
+        { q: "Comment accéder à la colonne 'Prix' ?", r: ["df['Prix']", "df.get('Prix')", "Les deux"], c: 2, j: "Pandas accepte plusieurs syntaxes, <b>les deux</b> sont valides." },
+        { q: "Faut-il traiter les outliers en régression ?", r: ["Non", "Oui, ils faussent la droite", "Seulement négatifs"], c: 1, j: "<b>Oui</b>, car la régression (via MSE) est très sensible aux outliers." },
+        { q: "Remplacer les NaNs par 0 est-il toujours conseillé ?", r: ["Oui", "Non, crée un biais", "Seulement prix"], c: 1, j: "<b>Non</b>, cela peut gravement fausser la moyenne et les statistiques." },
+        { q: "Laquelle permet de filtrer des lignes ?", r: ["df.filter()", "df.loc[]", "df.find()"], c: 1, j: "<b>loc</b> et <b>iloc</b> sont les méthodes standards de sélection." },
+        { q: "Comment renommer une colonne ?", r: ["df.rename()", "df.change()", "df.set_name()"], c: 0, j: "La fonction est <b>df.rename(columns={'old': 'new'})</b>." },
+        { q: "df.shape retourne :", r: ["Poids", "Lignes et colonnes", "Forme graphiques"], c: 1, j: "L'attribut .shape renvoie un tuple <b>(nombre de lignes, nombre de colonnes)</b>." },
+        { q: "Dataset 1000 lignes, df.dropna() reste 800. Combien de NaNs ?", r: ["1000", "800", "200"], c: 2, j: "1000 initiales - 800 finales = <b>200</b> lignes contenaient des valeurs manquantes et ont été supprimées." },
+        { q: "ID_Client doit-il être en régression ?", r: ["Oui", "Non, pas prédictif", "Anciens clients"], c: 1, j: "<b>Non</b>. Un identifiant est juste un numéro d'ordre, il n'a aucune relation de cause à effet avec la cible." },
+        { q: "Bibliothèque de visualisation avec Pandas :", r: ["Sklearn", "Matplotlib", "CSV"], c: 1, j: "<b>Matplotlib</b> (et Seaborn) sont les standards pour tracer des graphes depuis Pandas." },
+        { q: "Que signifie 'NaN' ?", r: ["Not a Number", "New and Nice", "Negative Null"], c: 0, j: "<b>Not a Number</b>. C'est le standard informatique pour désigner une donnée manquante ou invalide." },
+        { q: "One-Hot encoding sert à :", r: ["Moyenne", "Texte en numérique", "Doublons"], c: 1, j: "Il transforme une variable catégorielle (ex: 'Rouge', 'Bleu') en colonnes binaires (0/1) exploitables par l'algorithme." },
+        { q: "Quelle commande lit un CSV ?", r: ["pd.read_csv()", "pd.open_csv()", "pd.load()"], c: 0, j: "La fonction standard est <b>pd.read_csv('fichier.csv')</b>." },
+        { q: "Faut-il mélanger les données avant Train/Test ?", r: ["Oui", "Non", "Seulement images"], c: 0, j: "<b>Oui</b>, pour éviter que l'ordre des données (ex: triées par date) ne biaise l'entraînement." },
+        { q: "Le nettoyage représente quel % du travail ?", r: ["10%", "50%", "80%+"], c: 2, j: "C'est souvent <b>80%</b> du temps d'un Data Scientist." },
+        { q: "Définition de l'éthique en IA :", r: ["Règle fixe", "Réflexion 'bien agir'", "Sécurité"], c: 1, j: "L'éthique n'est pas une loi fixe, c'est une <b>réflexion dynamique</b> visant à définir le 'bien agir' ensemble." },
+        { q: "Lequel n'est PAS un principe moral ?", r: ["Bienfaisance", "Rentabilité", "Autonomie"], c: 1, j: "La <b>rentabilité</b> est un objectif économique, pas un principe moral." },
+        { q: "L'éthique différencie le bien du mal :", r: ["Vrai", "Faux", "Seulement robots"], c: 0, j: "<b>Vrai</b>. C'est le fondement de la distinction éthique/morale." },
+        { q: "Défi 'Transparence' :", r: ["Vitesse", "Intelligibilité", "Prix"], c: 1, j: "La transparence (ou explicabilité) signifie que les décisions de l'IA doivent être <b>compréhensibles</b> pour les humains." },
+        { q: "Défi 'Neutralité' évite :", r: ["Énergie", "Biais discriminatoires", "Pannes"], c: 1, j: "La neutralité vise à empêcher l'IA de reproduire des <b>discriminations</b> (racisme, sexisme, etc.)." },
+        { q: "Protection vie privée liée à :", r: ["Collecte données", "Interface", "Python"], c: 0, j: "C'est le défi de la gestion et de la protection des <b>données personnelles</b> (RGPD)." },
+        { q: "Tâche où l'IA égale l'humain :", r: ["Imprévu", "Fraudes bancaires", "Émotions"], c: 1, j: "L'IA excelle dans la détection de motifs complexes dans de grandes bases de données, comme la <b>fraude bancaire</b>." },
+        { q: "IA traduit toutes les subtilités ?", r: ["Oui", "Non", "Seulement anglais"], c: 1, j: "<b>Non</b>. L'humour, l'ironie et le contexte culturel échappent encore souvent à la traduction automatique." },
+        { q: "Domaine comprenant les images :", r: ["Robotique", "Vision par ordinateur", "NLP"], c: 1, j: "Le traitement des images s'appelle la <b>Vision par ordinateur</b> (Computer Vision)." },
+        { q: "Acteur économique majeur :", r: ["INRIA", "Amazon", "MIT"], c: 1, j: "<b>Amazon</b> (via AWS) est un géant économique mondial de l'IA, contrairement à l'INRIA (recherche)." },
+        { q: "Google est un acteur :", r: ["Académique", "Économique", "Gouvernement"], c: 1, j: "C'est un acteur <b>économique</b> privé." },
+        { q: "INRIA et MIT sont :", r: ["Économiques", "Académiques", "Sociaux"], c: 1, j: "Ce sont des institutions de <b>recherche académique</b>." },
+        { q: "Solution IA de Microsoft :", r: ["PyTorch", "Azure ML", "TensorFlow"], c: 1, j: "<b>Azure Machine Learning</b> est la plateforme cloud de Microsoft." },
+        { q: "Scikit-learn est :", r: ["Payant", "Gratuit", "Seulement Google"], c: 1, j: "C'est une bibliothèque <b>gratuite et open-source</b>." },
+        { q: "IA Google Cloud est :", r: ["Gratuit", "Payant", "Obsolète"], c: 1, j: "C'est une solution professionnelle <b>payante</b>." },
+        { q: "Pandas est proposé par :", r: ["Google", "Microsoft", "Open Source"], c: 2, j: "Pandas est un projet <b>Open Source</b> communautaire (via NumFOCUS)." },
+        { q: "Qui a développé ChatGPT ?", r: ["Google", "OpenAI", "Meta"], c: 1, j: "C'est l'organisation <b>OpenAI</b>." },
+        { q: "Architecture de ChatGPT :", r: ["Convolutionnel", "Transformer", "Markov"], c: 1, j: "Le 'T' de GPT signifie <b>Transformer</b>, l'architecture clé des modèles de langage modernes." },
+        { q: "ChatGPT utilise des réseaux de neurones :", r: ["Vrai", "Faux", "Seulement images"], c: 0, j: "<b>Vrai</b>. C'est un modèle de Deep Learning basé sur des réseaux de neurones profonds." },
+        { q: "Marvin Lee Minsky est :", r: ["Pionnier IA", "Créateur Java", "Ministre"], c: 0, j: "Avec John McCarthy, c'est l'un des <b>pères fondateurs</b> historiques de l'IA." },
+        { q: "John McCarthy a :", r: ["Inventé iPhone", "Co-fondé l'IA", "Créé SpaceX"], c: 1, j: "Il a organisé la conférence de Dartmouth (1956) et inventé le terme 'Intelligence Artificielle'." },
+        { q: "Cerveau numérique émerge en :", r: ["1870", "1940", "2000"], c: 1, j: "Les premières théorisations (neurone formel) datent des années <b>1940</b>." },
+        { q: "Dennis Ritchie lié à l'IA ?", r: ["Oui", "Non, UNIX/C", "Créé ChatGPT"], c: 1, j: "<b>Non</b>. Dennis Ritchie est un géant de l'informatique (langage C, Unix), mais pas spécifiquement de l'IA." },
+        { q: "IA gère l'imprévu ?", r: ["Oui", "Non, limite actuelle", "Avec internet"], c: 1, j: "<b>Non</b>. L'adaptabilité à des situations totalement inconnues reste une grande faiblesse de l'IA actuelle." },
+        { q: "Deep learning fait partie de :", r: ["IA", "Bureautique", "Matériel"], c: 0, j: "C'est une sous-branche du Machine Learning, qui est lui-même une sous-branche de l'<b>IA</b>." },
+        { q: "Open Source signifie :", r: ["Fermé", "Accessible/Modifiable", "Espion"], c: 1, j: "Le code source est <b>public, accessible et modifiable</b> par tous." },
+        { q: "Acteur associé à DeepMind :", r: ["Amazon", "Google", "Microsoft"], c: 1, j: "DeepMind a été racheté par <b>Google</b> en 2014." },
+        { q: "Neutralité cruciale pour :", r: ["Éviter discrimination", "Vitesse", "Poids"], c: 0, j: "Elle sert à assurer l'<b>équité</b> et éviter les biais racistes/sexistes dans les algorithmes." },
+        { q: "IA détecte des tumeurs ?", r: ["Vrai", "Faux", "Impossible"], c: 0, j: "<b>Vrai</b>. L'analyse d'imagerie médicale est l'une des grandes réussites de l'IA." },
+        { q: "Terme 'IA' inventé vers :", r: ["1956", "1995", "2015"], c: 0, j: "Il a été proposé officiellement en <b>1956</b> lors de la conférence de Dartmouth." },
+        { q: "Quelle fonction Sklearn pour régression ?", r: ["Linear_model()", "LinearRegression()", "RegLin()"], c: 1, j: "La classe exacte est <b>LinearRegression()</b>." },
+        { q: "Régression Sklearn est dans :", r: ["linear_model", "preprocessing", "metrics"], c: 0, j: "Elle se trouve dans le sous-module <b>sklearn.linear_model</b>." },
+        { q: "Prédire une valeur continue :", r: ["Classification", "Régression linéaire", "Clustering"], c: 1, j: "C'est la définition même de la <b>Régression</b>." },
+        { q: "Corrélation de 1 avec Y :", r: ["Faible", "Neutre", "Forte"], c: 2, j: "C'est le maximum possible : une corrélation <b>parfaite et forte</b>." },
+        { q: "Corrélation de -0,05 :", r: ["Forte", "Faible", "Inexistante"], c: 1, j: "C'est extrêmement proche de 0, donc la relation est quasi <b>inexistante</b>." },
+        { q: "Bibliothèque pour stocker données :", r: ["Sklearn", "Pandas", "Matplotlib"], c: 1, j: "<b>Pandas</b> est spécialisée dans la manipulation de données (DataFrames)." },
+        { q: "Objet Pandas pour stocker :", r: ["Table", "Frame", "Dataframe"], c: 2, j: "La structure de données principale est le <b>DataFrame</b>." },
+        { q: "Métrique 1/N * Σ|yi - ŷ| :", r: ["MSE", "MAE", "RMSE"], c: 1, j: "C'est la formule mathématique de la <b>MAE</b> (valeur absolue)." },
+        { q: "Métrique racine du MSE :", r: ["MAE", "RMSE", "R2"], c: 1, j: "La racine carrée (Root) de la MSE est la <b>RMSE</b>." },
+        { q: "Métrique 1/N * Σ(yi - ŷ)² :", r: ["MAE", "RMSE", "MSE"], c: 2, j: "C'est la formule mathématique de la <b>MSE</b> (erreur au carré)." },
+        { q: "Méthode d'ajustement standard :", r: ["F-Score", "Recall", "Least Square"], c: 2, j: "La régression linéaire utilise la méthode des <b>Moindres Carrés (Least Squares)</b>." },
+        { q: "Type de variable note A à D :", r: ["Numérique", "Nominale", "Ordinale"], c: 2, j: "Il y a un ordre logique (A > B > C...), c'est donc une variable <b>Ordinale</b>." },
+        { q: "Variable 'Couleur' (sans ordre) :", r: ["Nominale", "Ordinale", "Quantitatif"], c: 0, j: "Pas d'ordre logique, c'est une variable <b>Nominale</b>." },
+        { q: "Y = 50000 - 5X, hausse 1€ prix :", r: ["-5€ CA", "-5k€ CA", "+5k€ CA"], c: 1, j: "Si l'unité de Y est k€, la pente -5 signifie une baisse de <b>5 k€</b>." },
+        { q: "Type régression linéaire :", r: ["Non supervisé", "Supervisé", "Descriptif"], c: 1, j: "Elle apprend à partir d'exemples étiquetés, c'est du <b>Supervisé</b>." },
+        { q: "Jeu pour construire modèle :", r: ["Test", "Validation", "Entraînement"], c: 2, j: "Le modèle apprend sur le jeu d'<b>Entraînement (Training set)</b>." },
+        { q: "Architecture de ChatGPT :", r: ["Markov", "Convolutionnel", "Transformer"], c: 2, j: "C'est un modèle de langage basé sur l'architecture <b>Transformer</b>." },
+        { q: "Acteur académique :", r: ["Google", "Amazon", "INRIA"], c: 2, j: "L'<b>INRIA</b> est un institut public de recherche français." },
+        { q: "Solution cloud payante :", r: ["Sklearn", "PyTorch", "Azure ML"], c: 2, j: "<b>Azure</b> est un service commercial de Microsoft." },
+        { q: "Défi intelligibilité :", r: ["Neutralité", "Transparence", "Vie privée"], c: 1, j: "Rendre l'IA intelligible correspond au défi de la <b>Transparence</b>." },
+        { q: "Défi absence biais :", r: ["Neutralité", "Transparence", "Protection"], c: 0, j: "Ne pas avoir de biais correspond à la <b>Neutralité</b>." },
+        { q: "Pionniers IA :", r: ["Elon Musk", "Steve Jobs", "McCarthy/Minsky"], c: 2, j: "Ce sont les chercheurs historiques : <b>McCarthy et Minsky</b>." },
+        { q: "IA réussit aujourd'hui :", r: ["Fraudes", "Imprévu", "Émotions"], c: 0, j: "L'IA est très forte pour détecter des anomalies comme les <b>fraudes</b>." },
+        { q: "DataFrame 512/1000 NaNs :", r: ["Moyenne", "Supprimer", "Garder"], c: 1, j: "Plus de 50% de vide : la colonne est inutilisable, il faut la <b>supprimer</b>." },
+        { q: "Dans Y = aX + b, b est :", r: ["Pente", "Coefficient", "Intercept"], c: 2, j: "C'est le terme anglais pour l'ordonnée à l'origine : <b>Intercept</b>." },
+        { q: "Besoin régression :", r: ["Indépendante", "Dépendante", "Les deux"], c: 2, j: "Pour apprendre, il faut des données d'entrée (Indépendantes) ET des cibles (Dépendante)." },
+        { q: "Comprendre images :", r: ["Robotique", "NLP", "Vision"], c: 2, j: "C'est le domaine de la <b>Computer Vision</b>." },
+        { q: "Terme 'IA' signifie :", r: ["Informatique", "Intelligence Artificielle", "Internet"], c: 1, j: "IA = <b>Intelligence Artificielle</b>." }
+    ];
+
+    let totalPoints = 0;
+    let totalQuestionsAnswered = 0;
+    let shuffledQuestions = [];
+    let currentQuestionIndex = 0;
+
+    // Fonction de mélange
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function initQuiz() {
+        shuffledQuestions = shuffle([...database]);
+        currentQuestionIndex = 0;
+        totalPoints = 0;
+        totalQuestionsAnswered = 0;
+        document.getElementById('score').innerText = `Score : 0 / 0`;
+        genererQuestion();
+    }
+
+    function chargerProchaineQuestion() {
+        currentQuestionIndex++;
+        genererQuestion();
+    }
+
+    function genererQuestion() {
+        if (currentQuestionIndex >= shuffledQuestions.length) {
+            // Fin du quiz
+            document.getElementById('quiz-container').innerHTML = `
+                <div class="card" style="text-align:center;">
+                    <h2 style="color:#ffffff;">🎉 Examen Terminé !</h2>
+                    <p style="font-size:1.5rem; margin:20px 0; color:#b0b0b0;">Score final : <strong style="color:var(--primary-color)">${totalPoints} / ${database.length}</strong></p>
+                    <button class="nav-btn" onclick="location.reload()">Recommencer</button>
+                </div>
+            `;
+            document.getElementById('next-btn').style.display = 'none';
+            return;
+        }
+
+        const nextBtn = document.getElementById('next-btn');
+        if (nextBtn) nextBtn.style.display = 'none';
+
+        const q = shuffledQuestions[currentQuestionIndex];
+        
+        // Mélange des réponses
+        let answers = q.r.map((text, index) => ({ text, index }));
+        shuffle(answers);
+        
+        let html = `
+            <div class="card">
+                <div class="question-title">${q.q}</div>
+                <div class="options-grid">
+                    ${answers.map(ans => `
+                        <button class="option-btn" onclick="verifier(${ans.index}, ${q.c}, '${q.j.replace(/'/g, "\\'")}', this)">
+                            ${ans.text}
+                        </button>
+                    `).join('')}
+                </div>
+                <div id="res-box" class="justification"></div>
+            </div>
+        `;
+        document.getElementById('quiz-container').innerHTML = html;
+    }
+
+    function verifier(selected, correct, justification, btnClicked) {
+        totalQuestionsAnswered++;
+        const buttons = document.querySelectorAll('.option-btn');
+        const resBox = document.getElementById('res-box');
+        
+        buttons.forEach(btn => btn.disabled = true);
+
+        if (selected === correct) {
+            totalPoints++;
+            btnClicked.classList.add('correct');
+            resBox.innerHTML = `<strong>✅ Bravo !</strong><br>${justification}`;
+        } else {
+            btnClicked.classList.add('wrong');
+            resBox.innerHTML = `<strong>❌ Mauvaise réponse.</strong><br>${justification}`;
+        }
+
+        resBox.style.display = 'block';
+        document.getElementById('score').innerText = `Score : ${totalPoints} / ${totalQuestionsAnswered}`;
+        document.getElementById('next-btn').style.display = 'block';
+    }
+
+    initQuiz();
+</script>
+
+</body>
+</html>
