@@ -1,0 +1,225 @@
+      const questions = [// MÉTRIQUES & FORMULES
+            // --- THÈME : MÉTRIQUES & FORMULES (30 QUESTIONS) ---
+    // Section : Identification visuelle (Sources: )
+    { q: "Quelle formule correspond à 1/N * Σ(yi - ŷ)² ?", r: ["MSE", "RMSE", "MAE"], c: 0, j: "C'est la Mean Squared Error (Moyenne des erreurs au carré)." },
+    { q: "Quelle formule correspond à √[1/N * Σ(yi - ŷ)²] ?", r: ["MSE", "RMSE", "MAE"], c: 1, j: "C'est la Root Mean Squared Error (Racine de la moyenne des erreurs au carré)." },
+    { q: "Quelle formule correspond à 1/N * Σ|yi - ŷ| ?", r: ["MSE", "RMSE", "MAE"], c: 2, j: "C'est la Mean Absolute Error (Moyenne des erreurs absolues)." },
+    
+    // Section : Interprétation mathématique
+    { q: "Que représente 'yi' dans les formules de métriques ?", r: ["La valeur prédite", "La valeur réelle", "La moyenne"], c: 1, j: "yi désigne l'observation réelle dans le jeu de données." },
+    { q: "Que représente 'ŷ' (y chapeau) dans les formules ?", r: ["La valeur réelle", "La valeur prédite", "L'erreur type"], c: 1, j: "ŷ représente la valeur estimée par le modèle de régression." },
+    { q: "Que représente 'N' dans le calcul des métriques ?", r: ["Le nombre de variables", "Le nombre d'observations", "Le coefficient de pente"], c: 1, j: "N est la taille de l'échantillon ou le nombre total d'observations." },
+    
+    // Section : Comparaison et Sensibilité (Source: )
+    { q: "Quelle métrique est exprimée dans la même unité que la variable cible Y ?", r: ["MSE", "RMSE", "R²"], c: 1, j: "Grâce à la racine carrée, la RMSE retrouve l'unité d'origine des données." },
+    { q: "Si les erreurs sont (2, -2), quel est le résultat de la MAE ?", r: ["0", "2", "4"], c: 1, j: "(|2| + |-2|) / 2 = 2. La MAE ne s'annule pas avec les signes opposés." },
+    { q: "Si les erreurs sont (2, -2), quel est le résultat de la MSE ?", r: ["0", "4", "8"], c: 1, j: "(2² + (-2)²) / 2 = (4 + 4) / 2 = 4." },
+    { q: "Pourquoi utilise-t-on le carré dans la MSE ?", r: ["Pour simplifier le calcul", "Pour supprimer les signes négatifs et pénaliser les gros écarts", "Pour réduire la valeur finale"], c: 1, j: "Le carré rend toutes les erreurs positives et accentue l'impact des valeurs aberrantes." },
+    
+    // Section : Choix de métrique
+    { q: "Quelle métrique choisir pour ignorer l'impact disproportionné des outliers ?", r: ["MSE", "MAE", "RMSE"], c: 1, j: "La MAE est plus robuste car elle n'élève pas les erreurs au carré." },
+    { q: "Quelle métrique est la plus utilisée pour ajuster un modèle de Moindres Carrés ?", r: ["MSE", "MAE", "F-Score"], c: 0, j: "La régression linéaire cherche par définition à minimiser la somme des carrés des erreurs[cite: 15]." },
+    
+    // Section : Calculs rapides (Variantes)
+    { q: "Calcul : yi=10, ŷ=7. Quelle est l'erreur absolue ?", r: ["3", "-3", "17"], c: 0, j: "|10 - 7| = 3." },
+    { q: "Calcul : yi=10, ŷ=12. Quelle est l'erreur au carré ?", r: ["2", "-2", "4"], c: 2, j: "(10 - 12)² = (-2)² = 4." },
+    { q: "Si la MSE est de 16, quelle est la RMSE ?", r: ["4", "256", "8"], c: 0, j: "√16 = 4." },
+    { q: "Si la RMSE est de 10, quelle est la MSE ?", r: ["3.16", "100", "20"], c: 1, j: "10² = 100." },
+    
+    // Section : Propriétés
+    { q: "Une MAE de 0 signifie :", r: ["Le modèle est moyen", "Les prédictions sont parfaites", "Le modèle est défaillant"], c: 1, j: "Une erreur de 0 indique que ŷ est toujours égal à yi." },
+    { q: "Peut-on avoir une MSE négative ?", r: ["Oui", "Non", "Seulement avec des données négatives"], c: 1, j: "Non, car le carré d'un nombre est toujours positif ou nul." },
+    { q: "Laquelle de ces métriques n'est PAS utilisée en régression ?", r: ["MAE", "Recall", "RMSE"], c: 1, j: "Le Recall est une métrique de classification, pas de régression[cite: 15]." },
+    { q: "L'erreur résiduelle est définie par :", r: ["yi + ŷ", "yi - ŷ", "yi * ŷ"], c: 1, j: "C'est la différence entre le réel et le prédit." },
+
+    // Section : Contextuel (Source: [cite: 62, 129])
+    { q: "Dans une étude de CA, si MAE = 5 (en milliers d'€), l'erreur moyenne est de :", r: ["5 €", "500 €", "5000 €"], c: 2, j: "L'unité doit correspondre à celle définie dans l'énoncé (milliers d'euros)[cite: 62]." },
+    { q: "La RMSE est-elle toujours supérieure ou égale à la MAE ?", r: ["Oui", "Non", "Cela dépend de N"], c: 0, j: "Mathématiquement, la RMSE est toujours ≥ MAE à cause du poids des carrés." },
+    { q: "Si on double toutes les erreurs, la MSE est multipliée par :", r: ["2", "4", "8"], c: 1, j: "Comme les erreurs sont au carré (2²), l'impact est quadruplé." },
+    { q: "Quelle métrique est la plus difficile à interpréter directement ?", r: ["MAE", "RMSE", "MSE"], c: 2, j: "La MSE est en unités au carré (ex: €²), ce qui n'est pas intuitif." },
+    { q: "L'optimisation des 'Moindres Carrés' minimise quelle valeur ?", r: ["Σ|yi - ŷ|", "Σ(yi - ŷ)²", "√Σ(yi - ŷ)²"], c: 1, j: "Elle minimise la somme des carrés des erreurs[cite: 15]." },
+    { q: "Le symbole Σ (Sigma) dans les formules signifie :", r: ["Soustraction", "Somme", "Produit"], c: 1, j: "Il indique l'addition de tous les éléments de i=1 à N." },
+    { q: "Si N augmente, la MSE :", r: ["Augmente forcément", "Diminue forcément", "Reste une moyenne"], c: 2, j: "La MSE est une moyenne (1/N), elle se stabilise avec la taille de l'échantillon." },
+    { q: "Laquelle est une métrique de 'distance' ?", r: ["RMSE", "Coefficient de corrélation", "Intercept"], c: 0, j: "La RMSE peut être vue comme la distance euclidienne entre prédiction et réalité." },
+    { q: "Pour un modèle parfait, MSE / MAE est égal à :", r: ["0 / 0 (indéfini)", "1", "0"], c: 2, j: "Toutes les métriques d'erreur valent 0 si le modèle est parfait." },
+    { q: "L'équation de la droite de régression est souvent notée :", r: ["y = ax + b", "MSE = x²", "ŷ = f(x)"], c: 0, j: "C'est la forme standard de la régression linéaire simple[cite: 62]." },
+
+    { q: "La régression linéaire est-elle un algorithme de classification ?", r: ["Oui", "Non", "Seulement si les données sont binaires"], c: 1, j: "Non, c'est un algorithme de régression qui prédit une valeur numérique continue." },
+    { q: "Quel est l'objectif principal de la régression linéaire ?", r: ["Grouper des données similaires", "Prédire une variable quantitative", "Identifier des anomalies"], c: 1, j: "Elle sert à modéliser la relation entre une variable dépendante et une ou plusieurs variables indépendantes[cite: 20, 28]." },
+    { q: "Pourquoi dit-on qu'elle est 'linéaire' ?", r: ["Parce qu'elle utilise des lignes courbes", "Parce qu'elle suppose une relation en ligne droite entre X et Y", "Parce qu'elle est simple"], c: 1, j: "Elle cherche à ajuster une droite (ou un hyperplan) au milieu des points de données." },
+
+    // Section : Variables et Terminologie
+    { q: "Comment appelle-t-on la variable 'Y' dans Y = aX + b ?", r: ["Variable indépendante", "Variable dépendante", "Variable explicative"], c: 1, j: "Y est la variable dépendante ou variable à expliquer[cite: 28]." },
+    { q: "Comment appelle-t-on la variable 'X' ?", r: ["Variable expliquée", "Variable cible", "Variable indépendante"], c: 2, j: "X est la variable indépendante, aussi appelée prédicteur ou variable explicative[cite: 53]." },
+    { q: "Dans une régression linéaire multiple, combien y a-t-il de variables indépendantes ?", r: ["Une seule", "Exactement deux", "Plusieurs (N variables)"], c: 2, j: "La régression multiple utilise N variables indépendantes (X1, X2... Xn)[cite: 53, 120]." },
+
+    // Section : Hypothèses et Pré-requis
+    { q: "Quelle condition est nécessaire sur la variable dépendante ?", r: ["Elle doit être catégorielle", "Elle doit être étiquetée préalablement", "Elle doit être toujours positive"], c: 1, j: "Pour l'apprentissage supervisé, la variable dépendante doit être connue dans le jeu d'entraînement[cite: 28]." },
+    { q: "Les variables indépendantes peuvent-elles être corrélées entre elles ?", r: ["Oui, c'est idéal", "Non, cela peut poser des problèmes (multicolinéarité)", "Peu importe"], c: 1, j: "Une trop forte corrélation entre les X peut fausser l'interprétation des coefficients." },
+    { q: "Est-il nécessaire que les variables numériques aient des ordres de grandeur similaires ?", r: ["Oui, pour la stabilité", "Non, jamais", "Seulement pour les catégories"], c: 0, j: "Bien que non obligatoire pour la théorie, cela aide beaucoup l'algorithme à converger[cite: 28]." },
+
+    // Section : Modélisation et Coefficients
+    { q: "Dans l'équation Y = aX + b, que représente 'a' ?", r: ["L'ordonnée à l'origine", "La pente (coefficient directeur)", "L'erreur résiduelle"], c: 1, j: "Le coefficient 'a' détermine l'inclinaison de la droite." },
+    { q: "Dans l'équation Y = aX + b, que représente 'b' ?", r: ["La pente", "L'ordonnée à l'origine (biais)", "La variable cible"], c: 1, j: "C'est la valeur de Y quand X est égal à 0[cite: 62, 129]." },
+    { q: "Que signifie un coefficient 'a' négatif ?", r: ["Y augmente quand X augmente", "Y diminue quand X augmente", "Il n'y a pas de relation"], c: 1, j: "Une pente négative indique une relation inversement proportionnelle." },
+
+    // Section : Corrélation
+    { q: "Quelle valeur de corrélation indique l'absence totale de relation linéaire ?", r: ["1", "-1", "0"], c: 2, j: "Une corrélation de 0 signifie qu'il n'y a aucune tendance linéaire détectée[cite: 121, 125]." },
+    { q: "Une corrélation de -1 est-elle plus faible qu'une corrélation de 0.5 ?", r: ["Oui", "Non", "Elles sont égales"], c: 1, j: "Non, -1 indique une relation parfaite (très forte), seule la direction change." },
+    { q: "Le coefficient de corrélation est toujours compris entre :", r: ["0 et 100", "-1 et 1", "-∞ et +∞"], c: 1, j: "Il varie strictement entre -1 (relation inverse parfaite) et 1 (relation directe parfaite)." },
+
+    // Section : Méthodes d'ajustement
+    { q: "La méthode du 'Maximum Likelihood' est-elle le standard pour la régression linéaire simple ?", r: ["Oui", "Non, c'est le Least Square Error", "Oui, pour les petits datasets"], c: 1, j: "Le standard est la méthode des moindres carrés (Least Square Error)[cite: 13, 15]." },
+    { q: "Que minimise la méthode des moindres carrés ?", r: ["La somme des erreurs absolues", "La somme des carrés des résidus", "La valeur maximale de Y"], c: 1, j: "Elle cherche à rendre la somme des carrés des écarts la plus petite possible[cite: 53, 120]." },
+
+    // Section : Application et Interprétation
+    { q: "Si Y = 50 - 2X, quelle est l'influence de X ?", r: ["Forte et positive", "Forte et négative", "Neutre"], c: 1, j: "La pente est négative (-2), donc l'influence est négative." },
+    { q: "Peut-on utiliser la régression linéaire pour prédire le prix d'une maison ?", r: ["Oui", "Non", "Seulement si la maison est neuve"], c: 0, j: "Oui, car le prix est une valeur continue, c'est un cas d'usage classique." },
+    { q: "Quelle affirmation est vraie si le coefficient de corrélation est de 0.95 ?", r: ["La relation est faible", "La relation est forte", "Il n'y a aucun lien"], c: 1, j: "0.95 est très proche de 1, indiquant une relation linéaire forte[cite: 55, 58]." },
+
+    // Section : Limites
+    { q: "La régression linéaire détecte-t-elle les relations non-linéaires (courbes) ?", r: ["Oui", "Non", "Seulement en Python"], c: 1, j: "Par définition, elle ne cherche que des relations sous forme de ligne droite." },
+    { q: "L'impact des valeurs aberrantes (outliers) sur la régression est :", r: ["Nul", "Négligeable", "Important"], c: 2, j: "Les outliers peuvent 'tirer' la droite vers eux et fausser tout le modèle." },
+    { q: "La régression linéaire nécessite-t-elle beaucoup de puissance de calcul ?", r: ["Oui, comme le Deep Learning", "Non, c'est un algorithme très léger", "Seulement pour 10 lignes"], c: 1, j: "C'est l'un des algorithmes les plus rapides et les moins gourmands en ressources." },
+
+    // Section : Scikit-Learn (Généralités)
+    { q: "Quel est le nom du module contenant la régression dans sklearn ?", r: ["sklearn.cluster", "sklearn.linear_model", "sklearn.neighbors"], c: 1, j: "Elle se trouve dans le sous-module des modèles linéaires[cite: 50, 115]." },
+    { q: "Dans sklearn, quel argument passe-t-on à la méthode .fit() ?", r: ["Seulement X", "Seulement Y", "X et Y (features et labels)"], c: 2, j: "Il faut fournir les données d'entrée (X) et les cibles correspondantes (Y) pour l'entraînement." },
+
+    // Section : Concepts Avancés Simplifiés
+    { q: "Qu'est-ce qu'un 'résidu' ?", r: ["Une donnée manquante", "La différence entre valeur réelle et valeur prédite", "Le nom d'une variable"], c: 1, j: "C'est l'erreur faite par le modèle pour un point donné." },
+    { q: "La régression linéaire simple n'utilise qu'une seule variable :", r: ["Dépendante", "Indépendante", "Aléatoire"], c: 1, j: "Elle utilise une seule variable indépendante (X) pour prédire Y." },
+    { q: "Si tous les points sont parfaitement alignés sur la droite de régression, l'erreur est :", r: ["Infinie", "Égale à 1", "Égale à 0"], c: 2, j: "Si les points sont sur la droite, il n'y a aucun écart entre le réel et le prédit." },
+    { q: "La régression est-elle adaptée pour prédire si un email est un SPAM ?", r: ["Oui", "Non, c'est de la classification", "Seulement s'il y a beaucoup de texte"], c: 1, j: "Non, prédire une catégorie (Spam/Non Spam) relève de la classification (ex: régression logistique)." },
+    { q: "Dans l'analyse Y=50000-5X du cours, que représente X ?", r: ["Le prix de vente", "Le chiffre d'affaire", "Le nombre de clients"], c: 0, j: "X est le prix de vente en euros[cite: 62, 129]." }
+
+    // Section : Interprétation de l'équation de base (Source: Y = 50000 - 5X)
+    { q: "Dans l'équation Y = 50000 - 5X, que représente le nombre 50000 ?", r: ["Le prix de vente", "Le chiffre d'affaire quand le prix est à 0€", "La perte minimale"], c: 1, j: "C'est l'ordonnée à l'origine (intercept)." },
+    { q: "Dans Y = 50000 - 5X, si X est le prix en euros, quelle est l'unité du coefficient -5 ?", r: ["Euros", "Milliers d'euros par euro de prix", "Pas d'unité"], c: 1, j: "Le coefficient lie la variation de X à celle de Y." },
+    { q: "Si Y = 50000 - 5X, quel est le Chiffre d'Affaire (Y) si le prix (X) est de 10€ ?", r: ["49950", "49995", "45000"], c: 0, j: "50000 - (5 * 10) = 49950." },
+    { q: "Une pente de -5 signifie qu'une hausse de 1€ du prix entraîne :", r: ["Une hausse de 5k€ de CA", "Une baisse de 5k€ de CA", "Une baisse de 5€ de CA"], c: 1, j: "Le signe négatif indique une diminution[cite: 81, 82]." },
+
+    // Section : Signes et Directions
+    { q: "Si l'équation est Y = 10 + 2X, la relation entre X et Y est :", r: ["Positive (croissante)", "Négative (décroissante)", "Nulle"], c: 0, j: "Le coefficient +2 est positif, donc Y augmente avec X." },
+    { q: "Dans Y = -100 + 0.5X, si X augmente de 10, de combien augmente Y ?", r: ["5", "10", "50"], c: 0, j: "0.5 * 10 = 5." },
+    { q: "Laquelle de ces équations montre la chute la plus rapide de Y ?", r: ["Y = 10 - 2X", "Y = 10 - 8X", "Y = 100 - 1X"], c: 1, j: "Le coefficient -8 a la plus grande valeur absolue en négatif." },
+
+    // Section : Prédictions de Chiffre d'Affaire (Variables du document)
+    { q: "Si Y (en k€) = 20 - 2X (en €), quel prix (X) rend le CA (Y) nul ?", r: ["0€", "10€", "20€"], c: 1, j: "20 - 2*10 = 0." },
+    { q: "Si Y = 50000 - 5X, et que X passe de 10€ à 11€, Y diminue de :", r: ["1€", "5 unités", "5000 unités"], c: 1, j: "Chaque unité de X réduit Y de 5[cite: 82]." },
+    { q: "Dans Y = aX + b, si 'a' est égal à 0, que se passe-t-il ?", r: ["Y est toujours égal à b", "Y est égal à X", "L'équation est impossible"], c: 0, j: "Si la pente est nulle, Y est constant (ligne horizontale)." },
+
+    // Section : Manipulation de l'ordonnée à l'origine (Intercept)
+    { q: "Dans l'équation Y = 5X, quelle est la valeur de l'intercept ?", r: ["5", "0", "Inconnue"], c: 1, j: "Si rien n'est ajouté, b = 0." },
+    { q: "L'intercept peut-il être négatif ?", r: ["Oui", "Non", "Seulement en Python"], c: 0, j: "Oui, cela signifie que la droite coupe l'axe Y sous l'origine." },
+    { q: "Si b = 100 et a = -10, quelle est l'équation ?", r: ["Y = 100X - 10", "Y = -10X + 100", "Y = 10X - 100"], c: 1, j: "Forme y = ax + b." },
+
+    // Section : Logique Inverse
+    { q: "Si Y diminue quand X augmente, le coefficient 'a' est :", r: ["Supérieur à 0", "Inférieur à 0", "Égal à 0"], c: 1, j: "C'est une pente négative." },
+    { q: "Si X n'a aucune influence sur Y, l'équation ressemble à :", r: ["Y = b", "Y = aX", "Y = X"], c: 0, j: "Y reste constant quelle que soit la valeur de X." },
+    { q: "Dans Y = 0.1X + 500, X a-t-il une influence forte ?", r: ["Oui", "Non, l'influence est faible", "On ne peut pas savoir"], c: 1, j: "Le coefficient 0.1 indique une faible variation de Y par unité de X." },
+
+    // Section : Scénarios complexes (Variantes du cours)
+    { q: "Si Y = 50000 - 5X, pour X = 100, Y est égal à :", r: ["49500", "45000", "49900"], c: 0, j: "50000 - 500 = 49500." },
+    { q: "Une augmentation de 10€ du prix dans Y = 50000 - 5X entraîne une baisse de CA de :", r: ["5€", "50€", "500€"], c: 1, j: "10 * 5 = 50." },
+    { q: "L'intercept est-il toujours une valeur réaliste ?", r: ["Oui", "Non (ex: prix de 0€)", "Seulement pour les moyennes"], c: 1, j: "Parfois l'intercept est hors du domaine réel (on ne vend pas à 0€)." },
+
+    // Section : Terminologie et Symboles
+    { q: "Dans ŷ = β₀ + β₁X, que représente β₁ ?", r: ["L'ordonnée à l'origine", "La pente", "L'erreur"], c: 1, j: "C'est une notation statistique standard pour le coefficient de X." },
+    { q: "Dans ŷ = β₀ + β₁X, que représente β₀ ?", r: ["La pente", "L'intercept", "La variable X"], c: 1, j: "C'est la constante ou ordonnée à l'origine." },
+    { q: "L'équation Y = aX + b est une fonction :", r: ["Affines", "Carrées", "Exponentielles"], c: 0, j: "C'est la définition d'une fonction affine (droite)." },
+
+    // Section : Analyse d'erreurs graphiques
+    { q: "Si un point est au-dessus de la droite Y = 10X, son erreur (résidu) est :", r: ["Positive", "Négative", "Nulle"], c: 0, j: "Valeur réelle > Valeur prédite." },
+    { q: "Si un point est exactement sur la droite de régression :", r: ["y - ŷ = 0", "y - ŷ > 0", "y - ŷ < 0"], c: 0, j: "L'erreur est nulle." },
+
+    // Section : Problèmes de conversion (Source: k€)
+    { q: "Si Y est en k€ et l'équation donne 5, quel est le montant réel ?", r: ["5 €", "500 €", "5000 €"], c: 2, j: "5 * 1000 = 5000." },
+    { q: "Si Y = 50k€ - 5X et X est en €, le résultat 49995 signifie :", r: ["49,995 €", "49 995 €", "49 995 000 €"], c: 1, j: "On garde l'unité finale de Y." },
+
+    // Section : Finalisation
+    { q: "Laquelle de ces droites passe par l'origine (0,0) ?", r: ["Y = 2X + 1", "Y = 2X", "Y = 2X - 1"], c: 1, j: "L'ordonnée à l'origine doit être nulle (b=0)." },
+    { q: "Si 'a' est très grand (ex: 1000), la droite est :", r: ["Presque horizontale", "Presque verticale", "Inclinée à 45°"], c: 1, j: "Une forte pente rend la droite très raide." },
+    { q: "Peut-on avoir deux pentes différentes pour une même régression simple ?", r: ["Oui", "Non", "Seulement si Y est nul"], c: 1, j: "La régression linéaire simple calcule une unique pente optimale." },
+    { q: "Dans Y = -5X + 50000, l'augmentation du prix (X) est-elle bénéfique pour le CA (Y) ?", r: ["Oui", "Non", "C'est neutre"], c: 1, j: "Non, car la pente est négative, le CA baisse quand le prix monte." }
+
+         // Section : Analyse Exploratoire
+    { q: "Quelle commande Pandas donne un résumé statistique (moyenne, max, etc.) ?", r: ["df.info()", "df.describe()", "df.head()"], c: 1, j: "describe() calcule les statistiques principales des colonnes numériques." },
+    { q: "Que fait la commande df.head(10) ?", r: ["Supprime 10 lignes", "Affiche les 10 premières lignes", "Affiche les 10 dernières lignes"], c: 1, j: "head() permet de visualiser le début du DataFrame." },
+    { q: "Comment accède-t-on à une colonne nommée 'Prix' ?", r: ["df['Prix']", "df.get('Prix')", "Les deux sont possibles"], c: 2, j: "Pandas offre plusieurs syntaxes pour accéder aux colonnes." },
+
+    // Section : Pré-requis Régression (Source: [cite: 26, 28])
+    { q: "Pour une régression, faut-il traiter les valeurs aberrantes (outliers) ?", r: ["Non, c'est inutile", "Oui, car elles faussent la droite", "Seulement si elles sont négatives"], c: 1, j: "Les outliers influencent fortement la pente de la régression[cite: 28]." },
+    { q: "Remplacer les valeurs manquantes par 0 est-il toujours conseillé ?", r: ["Oui", "Non, cela peut créer un biais", "Seulement pour les prix"], c: 1, j: "Mettre des 0 peut fausser la moyenne et la distribution des données[cite: 28]." },
+
+    // Section : Manipulation avancée
+    { q: "Laquelle de ces méthodes permet de filtrer des lignes ?", r: ["df.filter()", "df.loc[]", "df.find()"], c: 1, j: "loc et iloc sont utilisés pour la sélection et le filtrage." },
+    { q: "Comment renommer une colonne dans Pandas ?", r: ["df.rename()", "df.change()", "df.set_name()"], c: 0, j: "rename() est la fonction dédiée avec l'argument 'columns'." },
+    { q: "La méthode df.shape retourne :", r: ["Le poids du fichier", "Le nombre de lignes et de colonnes", "La forme des graphiques"], c: 1, j: "Elle renvoie un tuple (lignes, colonnes)." },
+
+    // Section : Contextuel et Logique
+    { q: "Si votre dataset a 1000 lignes et que vous faites df.dropna(), il en reste 800. Combien de lignes avaient des NaNs ?", r: ["1000", "800", "200"], c: 2, j: "1000 - 800 = 200 lignes supprimées." },
+    { q: "Une colonne 'ID_Client' doit-elle être utilisée dans une régression ?", r: ["Oui, c'est important", "Non, c'est une donnée non-explicative", "Seulement pour les anciens clients"], c: 1, j: "Un identifiant n'a pas de valeur prédictive sur le comportement." },
+    { q: "Quelle bibliothèque est souvent utilisée AVEC Pandas pour visualiser les données ?", r: ["Scikit-learn", "Matplotlib", "CSV"], c: 1, j: "Matplotlib et Seaborn sont les partenaires classiques de Pandas." },
+    { q: "Que signifie 'NaN' dans un DataFrame ?", r: ["Not a Number (Valeur manquante)", "New and Nice", "Negative and Null"], c: 0, j: "C'est le marqueur standard des données manquantes." },
+    { q: "L'encodage 'One-Hot' sert à :", r: ["Calculer la moyenne", "Transformer du texte en colonnes numériques", "Supprimer les doublons"], c: 1, j: "C'est crucial pour utiliser des variables nominales dans une régression." },
+    { q: "Quelle commande permet de lire un fichier CSV ?", r: ["pd.read_csv()", "pd.open_csv()", "pd.load()"], c: 0, j: "C'est la fonction de base pour importer des données." },
+    { q: "Peut-on mélanger (shuffle) les données avant de séparer Train et Test ?", r: ["Oui, c'est recommandé", "Non, c'est interdit", "Seulement pour les images"], c: 0, j: "Mélanger évite que l'ordre des données n'influence l'apprentissage." },
+    { q: "Le nettoyage des données représente environ quel % du travail en IA ?", r: ["10%", "50%", "80% ou plus"], c: 2, j: "La préparation des données est l'étape la plus longue et cruciale." }
+
+// Section : Définitions de l'Éthique (Source: [cite: 136, 140])
+    { q: "Quelle proposition définit le mieux l'éthique en IA ?", r: ["Une règle de conduite fixe", "Une réflexion argumentée pour le 'bien agir'", "Un logiciel de sécurité"], c: 1, j: "L'éthique est une réflexion en vue du 'bien agir' et du 'faire mieux ensemble'[cite: 140]." },
+    { q: "Laquelle n'est PAS un principe de la science de la morale ?", r: ["Bienfaisance", "Rentabilité maximale", "Non-malfaisance"], c: 1, j: "Les principes incluent la bienfaisance, l'autonomie et le respect, mais pas la rentabilité[cite: 140]." },
+    { q: "L'éthique permet de différencier le bien du mal au sein d'un groupe :", r: ["Vrai", "Faux", "Seulement pour les robots"], c: 0, j: "C'est l'un des ensembles de principes définissant la morale et l'éthique[cite: 140]." },
+
+    // Section : Défis Éthiques (Source: [cite: 144, 147])
+    { q: "Le défi de la 'Transparence' concerne :", r: ["La vitesse de calcul", "L'intelligibilité des décisions pour les humains", "Le prix du modèle"], c: 1, j: "La transparence assure que l'humain peut comprendre comment une décision a été prise[cite: 147]." },
+    { q: "Le défi de la 'Neutralité' vise à éviter :", r: ["La consommation d'énergie", "Les biais discriminatoires", "Les pannes réseau"], c: 1, j: "La neutralité garantit que les résultats ne sont pas discriminatoires[cite: 147]." },
+    { q: "La protection de la vie privée est principalement liée à :", r: ["La collecte de données", "L'interface utilisateur", "La programmation en Python"], c: 0, j: "Ce défi porte sur la manière dont les données personnelles sont collectées et traitées[cite: 147]." },
+
+    // Section : Performances de l'IA (Source: [cite: 152, 155])
+    { q: "Pour quelle tâche l'IA égale-t-elle l'humain aujourd'hui ?", r: ["Réagir à l'imprévu", "Détecter des fraudes bancaires", "Éprouver des émotions"], c: 1, j: "L'IA surpasse souvent l'humain dans la détection de motifs complexes comme la fraude[cite: 155]." },
+    { q: "L'IA est-elle capable de traduire toutes les subtilités d'un texte ?", r: ["Oui, parfaitement", "Non, elle peut manquer de subtilités culturelles", "Seulement en anglais"], c: 1, j: "Bien que performante, la traduction automatique peut encore échouer sur certaines subtilités[cite: 155]." },
+    { q: "Quel domaine de l'IA étudie et comprend les images ?", r: ["Robotique", "Vision par ordinateur", "NLP"], c: 1, j: "C'est la Vision par ordinateur (Computer Vision)[cite: 160]." },
+
+    // Section : Acteurs Économiques (Source: [cite: 164, 168])
+    { q: "Lequel est un acteur économique majeur de l'IA ?", r: ["INRIA", "Amazon", "MIT"], c: 1, j: "Amazon fait partie des principaux acteurs économiques mondiaux[cite: 168]." },
+    { q: "Google est considéré comme un acteur de quel type ?", r: ["Académique", "Économique", "Gouvernemental"], c: 1, j: "C'est un acteur économique majeur via ses solutions Cloud et DeepMind[cite: 168]." },
+    { q: "L'INRIA et le MIT sont des acteurs de type :", r: ["Économiques", "Académiques / Recherche", "Sociaux"], c: 1, j: "Ce sont des institutions de recherche et de technologie[cite: 168]." },
+
+    // Section : Solutions Logicielles (Source: [cite: 170, 171, 183, 185])
+    { q: "Quelle solution IA est proposée par Microsoft ?", r: ["PyTorch", "Azure Machine Learning", "TensorFlow"], c: 1, j: "Azure ML est la plateforme cloud de Microsoft[cite: 171, 185]." },
+    { q: "Scikit-learn est une solution :", r: ["Payante", "Gratuite (Open Source)", "Uniquement pour Google"], c: 1, j: "C'est une bibliothèque gratuite et open-source pour Python[cite: 171]." },
+    { q: "IA Google Cloud est une solution :", r: ["Entièrement gratuite", "Payante / Professionnelle", "Obsolète"], c: 1, j: "Les solutions cloud des GAFAM sont généralement payantes[cite: 171]." },
+    { q: "Pandas est une solution proposée par quel acteur ?", r: ["Google", "Microsoft", "La communauté Open Source (OpenML)"], c: 2, j: "Pandas est un outil open-source souvent associé aux écosystèmes ouverts[cite: 185]." },
+    // --- THÈME : TECHNIQUE & SYNTAXE (30 QUESTIONS) ---
+    { q: "Quelle fonction Scikit-learn est utilisée pour la régression linéaire ?", r: ["Linear_model()", "LinearRegression()", "RegressionLinear()"], c: 1, j: "La fonction exacte à utiliser est LinearRegression()[cite: 50, 115]." },
+    { q: "Dans Scikit-learn, la régression linéaire fait partie de :", r: ["linear_model", "preprocessing", "metrics"], c: 0, j: "Elle appartient au sous-module sklearn.linear_model[cite: 50]." },
+    { q: "Comment s'appelle l'algorithme d'IA qui prédit une valeur continue ?", r: ["Classification", "Régression linéaire", "Clustering"], c: 1, j: "La régression linéaire est un algorithme d'apprentissage automatique supervisé[cite: 20]." },
+    { q: "Un coefficient de corrélation de 1 avec Y signifie que la relation est :", r: ["Faible", "Neutre", "Forte"], c: 2, j: "Une corrélation de 1 indique une relation linéaire parfaite et forte[cite: 58]." },
+    { q: "Si la corrélation entre X4 et Y est de -0,05, la relation est :", r: ["Forte", "Faible", "Inexistante"], c: 1, j: "Une valeur si proche de 0 indique une relation très faible[cite: 125]." },
+    { q: "Laquelle est une bibliothèque Python pour stocker des données ?", r: ["Scikit-learn", "Pandas", "Matplotlib"], c: 1, j: "Pandas est utilisée pour stocker un jeu de données via des Dataframes[cite: 99]." },
+    { q: "Dans Pandas, l'objet pour stocker les données s'appelle :", r: ["Table", "Frame", "Dataframe"], c: 2, j: "La structure de données de Pandas s'appelle le Dataframe[cite: 101]." },
+    { q: "Quelle métrique est calculée par 1/N * Σ|yi - ŷ| [cite_start]?", r: ["MSE", "MAE", "RMSE"], c: 1, j: "Il s'agit de la Mean Absolute Error (MAE)[cite: 10]." },
+    { q: "Quelle métrique est la racine carrée du MSE ?", r: ["MAE", "RMSE", "R-Square"], c: 1, j: "Le RMSE est défini par la racine carrée de la moyenne des erreurs au carré[cite: 10]." },
+    { q: "L'équation 1/N * Σ(yi - ŷ)² correspond à :", r: ["MAE", "RMSE", "MSE"], c: 2, j: "C'est la formule de la Mean Squared Error (MSE)[cite: 10]." },
+    { q: "Pour ajuster un modèle linéaire, on utilise souvent la méthode :", r: ["F-Score", "Recall", "Least Square Error"], c: 2, j: "Le Least Square Error (Moindres Carrés) est la méthode d'erreur standard[cite: 15]." },
+    { q: "Le type de variable pour une note A, B, C ou D est :", r: ["Numérique", "Nominale", "Ordinale"], c: 2, j: "C'est une variable ordinale car il existe un ordre entre les notes[cite: 108]." },
+    { q: "Une variable 'Couleur' (sans ordre) est de type :", r: ["Nominale", "Ordinale", "Quantitatif"], c: 0, j: "C'est une variable catégorique nominale[cite: 108]." },
+    { q: "Si X est le prix de vente en € et Y le CA en k€, Y = 50000 - 5X implique :", r: ["+1€ de prix = -5€ de CA", "+1€ de prix = -5k€ de CA", "+5€ de prix = +5000€ de CA"], c: 1, j: "Une hausse de 1€ du prix réduit le CA de 5 unités (soit 5000€ selon l'unité)[cite: 81, 82]." },
+    { q: "La régression linéaire est un apprentissage de type :", r: ["Non supervisé", "Supervisé", "Descriptif"], c: 1, j: "C'est un algorithme d'apprentissage supervisé[cite: 22]." },
+    { q: "Quel jeu de données construit le modèle prédictif ?", r: ["Jeu de test", "Jeu de validation", "Jeu d'entraînement"], c: 2, j: "Il faut utiliser le jeu de données d'entrainement pour construire le modèle[cite: 40]." },
+    { q: "Quelle architecture technique est à la base de ChatGPT ?", r: ["Markov", "Convolutionnel", "Transformer profonde"], c: 2, j: "ChatGPT est basé sur une architecture Transformer profonde[cite: 179]." },
+    { q: "Lequel est un acteur académique (Recherche) de l'IA ?", r: ["Google", "Amazon", "INRIA"], c: 2, j: "L'INRIA est un institut de recherche, contrairement à Google ou Amazon[cite: 168]." },
+    { q: "Quelle solution cloud n'est pas gratuite ?", r: ["Scikit-learn", "PyTorch", "Azure Machine Learning"], c: 2, j: "Azure Machine Learning et Google Cloud sont des solutions payantes[cite: 171]." },
+    { q: "Le défi éthique de l'intelligibilité s'appelle :", r: ["Neutralité", "Transparence", "Vie privée"], c: 1, j: "La transparence concerne l'intelligibilité des décisions pour les humains[cite: 147]." },
+    { q: "Le défi d'absence de biais ou de discrimination s'appelle :", r: ["Neutralité", "Transparence", "Protection"], c: 0, j: "La neutralité assure des résultats non discriminatoires[cite: 147]." },
+    { q: "Qui sont les pionniers de l'IA ?", r: ["Elon Musk", "Steve Jobs", "McCarthy et Minsky"], c: 2, j: "John McCarthy et Marvin Lee Minsky sont les pionniers cités[cite: 192]." },
+    { q: "Quelle tâche l'IA réussit-elle aujourd'hui ?", r: ["Détecter des fraudes bancaires", "Réagir à l'imprévu", "Émotions réelles"], c: 0, j: "L'IA peut égaler l'humain pour détecter des fraudes ou des tumeurs[cite: 155]." },
+    { q: "Un DataFrame avec 512/1000 valeurs manquantes doit être :", r: ["Complété par la moyenne", "Supprimé (colonne)", "Gardé tel quel"], c: 1, j: "Il faut supprimer entièrement la colonne si elle est trop incomplète[cite: 36]." },
+    { q: "Dans Y = aX + b, 'b' est appelé :", r: ["Pente", "Coefficient", "Ordonnée à l'origine (Biais)"], c: 2, j: "C'est l'ordonnée à l'origine[cite: 62]." },
+    { q: "Pour faire de la régression, il faut une variable :", r: ["Indépendante", "Dépendante", "Les deux"], c: 2, j: "Il faut une variable dépendante expliquée par des variables indépendantes[cite: 28]." },
+    { q: "Le domaine pour comprendre les images s'appelle :", r: ["Robotique", "NLP", "Vision par ordinateur"], c: 2, j: "C'est la Vision par ordinateur qui étudie les images[cite: 160]." },
+    { q: "Le Deep Learning est basé sur :", r: ["Des arbres", "Des réseaux de neurones", "Des listes"], c: 1, j: "ChatGPT, par exemple, utilise des réseaux de neurones artificiels[cite: 179]." },
+    { q: "Le terme 'IA' signifie :", r: ["Informatique Automatique", "Intelligence Artificielle", "Internet Augmenté"], c: 1, j: "IA signifie Intelligence Artificielle[cite: 3]." }
+        ];
